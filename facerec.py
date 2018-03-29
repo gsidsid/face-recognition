@@ -26,18 +26,25 @@ names = data[0][0]
 isSmile = data[1][0]
 
 grayfaces = classdata['grayfaces']
-hogFaces = []
 
-for face in range(grayfaces.shape[2]):
-	hogFaces.append(hog(grayfaces[:,:,face], orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1, 1)))
+train_x = grayfaces[:,:,0::2]
+test_x = grayfaces[:,:,1::2]
 
-hogFaces = np.asarray(hogFaces)
+print(train_x.shape)
+print(test_x.shape)
+
+train_hogFaces = []
+
+for face in range(train_x.shape[2]):
+	train_hogFaces.append(hog(train_x[:,:,face], orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1, 1)))
+
+train_hogFaces = np.asarray(train_hogFaces)
 
 forest = RandomForestClassifier(criterion='entropy',n_estimators=100,random_state=1,n_jobs=2)
-forest.fit(hogFaces, range(grayfaces.shape[2]))
+forest.fit(train_hogFaces, range(test_x.shape[2]))
 
-test_image = grayfaces[:, :, 2]
-hog_test_image = hog(test_image, orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1, 1))
+test_image = 8
+test_hogFace = hog(test_x[:, :, test_image], orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1, 1))
 
-yhat = forest.predict(hog_test_image.reshape(1, -1))
+yhat = forest.predict(test_hogFace.reshape(1, -1))
 print(yhat)
