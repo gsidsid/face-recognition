@@ -57,11 +57,30 @@ def validateAccuracy(classifier, test_x, verbose=True):
 		print("Percent Accuracy: ", accuracy_score)
 	return accuracy_score
 	"""
+def fastValidationCurve(train_x_hog,test_x,span,no_entries):
+	accuracies = []
+
+	HOG2 = []
+	for face in range(test_x.shape[2]):
+		HOG2.append(getHOGFace(test_x[:,:,face]))
+	test_hogFaces = np.asarray(HOG2)
+
+	for i in span:
+		forest = RandomForestClassifier(criterion='entropy', n_estimators=i, max_features="auto", random_state=123,n_jobs=-1,max_leaf_nodes=4**8)
+		forest.fit(train_x_hog, range(no_entries))
+		accuracies.append(forest.score(test_hogFaces, range(test_x.shape[2])) * 100)
+		print(i)
+	plt.plot(span,accuracies);
+	plt.xlabel('No. Trees')
+	plt.ylabel('Percent Accuracy')
+	plt.title('Accuracy-Validation Curve')
+	plt.show()
 
 def predictSuccess(classifier, selected_x, verbose=True):
 	ind = classifier.predict(getHOGFace(test_x[:,:,selected_x]).reshape(1,-1))
 	if verbose:
 		print("Sample recognition success:", (ind == selected_x))
+
 
 def exportTrees(forest, no_trees = 10):
 	trees = forest.estimators_
@@ -80,14 +99,16 @@ train_hogFaces = np.asarray(HOG1)
 
 
 
-forest = RandomForestClassifier(criterion='entropy',n_estimators=600,random_state=123,n_jobs=-1,max_depth=8, max_leaf_nodes=2**8)
+forest = RandomForestClassifier(criterion='entropy', n_estimators=700, max_features="auto", random_state=123,n_jobs=-1,max_leaf_nodes=4**8)
 forest.fit(train_hogFaces, range(train_x.shape[2]))
 
-predictSuccess(forest, 1)
+#predictSuccess(forest, 1)
 t = Timer(lambda: predictSuccess(forest,1,verbose=False))
 
 validateAccuracy(forest, test_x)
 print('Executed in: ' + str(t.timeit(number=1)) + ' seconds.')
+
+#fastValidationCurve(train_hogFaces,test_x,range(1000)[10::100], test_x.shape[2])
 
 #exportTrees(forest,no_trees=15)
 
