@@ -30,9 +30,6 @@ grayfaces = classdata['grayfaces']
 train_x = grayfaces[:,:,0::2]
 test_x = grayfaces[:,:,1::2]
 
-print(train_x.shape)
-print(test_x.shape)
-
 train_hogFaces = []
 
 for face in range(train_x.shape[2]):
@@ -40,11 +37,16 @@ for face in range(train_x.shape[2]):
 
 train_hogFaces = np.asarray(train_hogFaces)
 
-forest = RandomForestClassifier(criterion='entropy',n_estimators=100,random_state=1,n_jobs=2)
-forest.fit(train_hogFaces, range(test_x.shape[2]))
+forest = RandomForestClassifier(criterion='entropy',n_estimators=1000,random_state=1,n_jobs=8)
+forest.fit(train_hogFaces, range(train_x.shape[2]))
 
-test_image = 8
-test_hogFace = hog(test_x[:, :, test_image], orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1, 1))
+misc = 0
+for i in range(test_x.shape[2]):
+	test_hogFace = hog(test_x[:, :, i], orientations=8, pixels_per_cell=(16, 16), cells_per_block=(1, 1))
+	yhat = forest.predict(test_hogFace.reshape(1, -1))
+	if yhat != i:
+		misc += 1
 
-yhat = forest.predict(test_hogFace.reshape(1, -1))
-print(yhat)
+
+print("Percent Accuracy: ", 100-(misc/test_x.shape[2])*100)
+
