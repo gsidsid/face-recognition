@@ -97,19 +97,15 @@ for face in range(train_x.shape[2]):
 	HOG1.append(getHOGFace(train_x[:,:,face]))
 train_hogFaces = np.asarray(HOG1)
 
-
-
-forest = RandomForestClassifier(criterion='entropy', n_estimators=700, max_features="auto", random_state=123,n_jobs=-1,max_leaf_nodes=4**8)
+forest = RandomForestClassifier(criterion='entropy', n_estimators=700, max_features="auto", random_state=123,n_jobs=-1,max_leaf_nodes=2**6)
 forest.fit(train_hogFaces, range(train_x.shape[2]))
 
-#predictSuccess(forest, 1)
 t = Timer(lambda: predictSuccess(forest,1,verbose=False))
-
 validateAccuracy(forest, test_x)
-print('Executed in: ' + str(t.timeit(number=1)) + ' seconds.')
+print('Executed prediction in: ' + str(t.timeit(number=1)) + ' seconds.')
 
+#predictSuccess(forest, 1)
 #fastValidationCurve(train_hogFaces,test_x,range(1000)[10::100], test_x.shape[2])
-
 #exportTrees(forest,no_trees=15)
 
 
